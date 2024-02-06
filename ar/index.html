@@ -1,79 +1,91 @@
-<!doctype html>
 <html>
-    <head>
-        <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
-        <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-        <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-detector.js"></script>
-        <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-handler.js"></script>
-        <script>
-            AFRAME.registerComponent('videohandler', {
-                init: function () {
-                    var marker = this.el;
-                    this.vid = document.querySelector("#vid");
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    <script src="https://unpkg.com/aframe-gestures-component@2.2.2/dist/aframe-gestures-component.min.js"></script>
+    <script src="https://cdn.webrtc-experiment.com/RecordRTC.js"></script>
+</head>
+  <body>
+    <!-- <button id="startRecording">Start Recording</button>
+    <button id="stopRecording" style="display:none;">Stop Recording</button>
+    <button id="shareRecording" style="display:none;">Share Recording</button> -->
 
-                    marker.addEventListener('markerFound', function () {
-                        this.toggle = true;
-                        this.vid.play();
-                    }.bind(this));
-
-                    marker.addEventListener('markerLost', function () {
-                        this.toggle = false;
-                        this.vid.pause();
-                    }.bind(this));
-                },
+    <script>
+        let recorder;
+  
+        document.getElementById('startRecording').addEventListener('click', async () => {
+          try {
+            const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+            recorder = new RecordRTC(stream, {
+              type: 'video',
+              mimeType: 'video/webm',
             });
-        </script>
-    </head>
+  
+            recorder.startRecording();
+  
+            // Show and hide relevant buttons
+            document.getElementById('startRecording').style.display = 'none';
+            document.getElementById('stopRecording').style.display = 'block';
+          } catch (error) {
+            console.error('Error accessing screen capture API:', error);
+          }
+        });
+  
+        document.getElementById('stopRecording').addEventListener('click', () => {
+          recorder.stopRecording(() => {
+            // Show and hide relevant buttons
+            document.getElementById('stopRecording').style.display = 'none';
+            document.getElementById('shareRecording').style.display = 'block';
+          });
+        });
+  
+        document.getElementById('shareRecording').addEventListener('click', () => {
+          // Implement code to share the recorded video
+          // You can use recorder.getBlob() to get the recorded data as a Blob
+          const blob = recorder.getBlob();
+          const url = URL.createObjectURL(blob);
+  
+          // Example: Open the recording in a new window
+          window.open(url);
+  
+          // Reset UI
+          document.getElementById('shareRecording').style.display = 'none';
+          document.getElementById('startRecording').style.display = 'block';
+        });
+    </script>
 
-    <body style="margin: 0; overflow: hidden;">
-        <a-scene
-            vr-mode-ui="enabled: false"
-            loading-screen="enabled: false;"
-            arjs='sourceType: webcam; debugUIEnabled: false;'
-            id="scene"
-            embedded
-            gesture-detector
-        >
-            <a-assets>
-                <video
-                    id="vid"
-                    src="assets/asset.mp4"
-                    preload="auto"
-                    response-type="arraybuffer"
-                    loop
-                    crossorigin
-                    webkit-playsinline
-                    autoplay
-                    muted
-                    playsinline
-                ></video>
-            </a-assets>
+    <!-- <a-scene mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false"> -->
+    <a-scene mindar-image="imageTargetSrc: assets/targets.mind;" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" gesture-detector>
+      
+    <!-- <a-assets> -->
+	    <!-- <img id="card" src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.png" /> -->
+	    <!-- <video src="assets/asset.mp4"
+                preload="auto" id="vid" response-type="arraybuffer" loop
+                crossorigin webkit-playsinline autoplay muted playsinline>
+        </video> -->
+        <!-- <a-asset-item id="avatarModel" src="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/softmind/scene.gltf"></a-asset-item> -->
+    <!-- </a-assets> -->
 
-            <a-marker
-                type="pattern"
-                preset="custom"
-                url="assets/marker.patt"
-                videohandler
-                smooth="true"
-                smoothCount="10"
-                smoothTolerance="0.01"
-                smoothThreshold="5"
-                raycaster="objects: .clickable"
-                emitevents="true"
-                cursor="fuse: false; rayOrigin: mouse;"
-                id="markerA"
-            >
-                <a-video
-                    src="#vid"
-                    scale="1 1 1"
-                    position="0 0.1 0"
-                    rotation="-90 0 0"
-                    class="clickable"
-                    gesture-handler
-                ></a-video>
-            </a-marker>
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-            <a-entity camera></a-entity>
-        </a-scene>
-    </body>
+      <a-entity mindar-image-target="targetIndex: 0" pinchable scale-on-pinch>
+        <!-- <a-plane src="#card" position="0 0 0" height="0.552" width="1" rotation="0 0 0"></a-plane> -->
+        <a-video
+                src="assets/2.mp4"
+                position='0 0 0'
+                rotation='0 0 0'
+                width='1'
+                height='1.5'
+                preload="auto" id="vid" response-type="arraybuffer" loop
+                crossorigin webkit-playsinline autoplay muted playsinline
+                >
+        <!-- <a-gltf-model rotation="0 0 0 " position="0 0 0.1" scale="0.005 0.005 0.005" src="#avatarModel"
+          animation="property: position; to: 0 0.1 0.1; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate"
+        > -->
+        <a-sound src="assets/Ram.mp3" autoplay="false" position="0 0 0"></a-sound>
+
+      </a-entity>
+    </a-scene>
+  </body>
 </html>
